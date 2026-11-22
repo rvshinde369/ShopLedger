@@ -1,0 +1,118 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+<title id="title">ShopLedger application architecture</title>
+<desc id="desc">Architecture map of the ShopLedger browser interface, Express server, routers, library modules, configuration, JSON data store, and numbered order flow.</desc>
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#64748b"/></marker>
+  <marker id="flowarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/></marker>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#172033;font-size:13px}
+    .title{font-size:24px;font-weight:700}.subtitle{font-size:13px;fill:#475569}
+    .head{font-size:15px;font-weight:700}.mod{font-size:13px;font-weight:700}.small{font-size:12px}
+    .panel{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.4}.box{fill:#fff;stroke:#64748b;stroke-width:1.3}
+    .ticket{fill:#fff1d6;stroke:#d97706;stroke-width:2}.flow{fill:#eff6ff;stroke:#2563eb;stroke-width:1.6}
+    .data{fill:#f0fdf4;stroke:#16a34a;stroke-width:1.5}.edge{fill:none;stroke:#64748b;stroke-width:1.5;marker-end:url(#arrow)}
+    .fed{fill:none;stroke:#2563eb;stroke-width:2.1;marker-end:url(#flowarrow)}
+    .dash{stroke-dasharray:5 4}.muted{fill:#475569}
+  </style>
+</defs>
+<rect width="1200" height="800" fill="#ffffff"/>
+<text x="30" y="38" class="title">ShopLedger | application architecture</text>
+<text x="30" y="60" class="subtitle">POS · Khata credit ledger · GST invoices · JSON-backed storage</text>
+
+<!-- App components -->
+<rect x="24" y="82" width="230" height="279" rx="12" class="panel"/>
+<text x="42" y="108" class="head">Browser UI · public/</text>
+<rect x="42" y="120" width="194" height="58" rx="8" class="box"/>
+<text x="54" y="143" class="mod">index.html · style.css</text><text x="54" y="163" class="small muted">POS, orders, Khata, audit views</text>
+<rect x="42" y="190" width="194" height="91" rx="8" class="box"/>
+<text x="54" y="213" class="mod">js/app.js</text><text x="54" y="234" class="small">getSelectedCartItems()</text><text x="54" y="252" class="small">updateCartPreview() · loadOrders()</text><text x="54" y="270" class="small">POST /api/orders</text>
+<text x="42" y="316" class="small muted">Sends cart/customer/payment/coupon</text>
+<text x="42" y="336" class="small muted">Receives JSON; invoice opens in browser</text>
+
+<rect x="282" y="82" width="220" height="279" rx="12" class="panel"/>
+<text x="300" y="108" class="head">Express · server.js</text>
+<rect x="300" y="120" width="184" height="66" rx="8" class="box"/>
+<text x="312" y="144" class="mod">bodyParser.json()</text><text x="312" y="166" class="small">serves public/ static files</text>
+<rect x="300" y="200" width="184" height="64" rx="8" class="box"/>
+<text x="312" y="224" class="mod">app.use('/api', …)</text><text x="312" y="246" class="small">mounts all four routers</text>
+<rect x="300" y="278" width="184" height="62" rx="8" class="box"/>
+<text x="312" y="302" class="mod">GET invoice route</text><text x="312" y="324" class="small">orders.get() → invoice.render()</text>
+
+<rect x="530" y="82" width="278" height="279" rx="12" class="panel"/>
+<text x="548" y="108" class="head">HTTP routers · routes/</text>
+<rect x="548" y="120" width="242" height="48" rx="7" class="box"/>
+<text x="560" y="141" class="mod">products.js</text><text x="560" y="159" class="small">GET /products · GET /coupons</text>
+<rect x="548" y="176" width="242" height="64" rx="7" class="box"/>
+<text x="560" y="197" class="mod">orders.js</text><text x="560" y="215" class="small">POST /orders · POST /orders/:id/cancel</text><text x="560" y="233" class="small">GET /orders · GET /orders/:id</text>
+<rect x="548" y="248" width="242" height="48" rx="7" class="box"/>
+<text x="560" y="269" class="mod">customers.js</text><text x="560" y="287" class="small">GET /customers · POST settle</text>
+<rect x="548" y="304" width="242" height="44" rx="7" class="box"/>
+<text x="560" y="324" class="mod">reports.js</text><text x="560" y="342" class="small">dashboard · pricing preview · GST · export</text>
+
+<rect x="838" y="82" width="338" height="455" rx="12" class="panel"/>
+<text x="856" y="108" class="head">Business logic · lib/</text>
+<rect x="856" y="120" width="145" height="66" rx="7" class="ticket"/>
+<text x="868" y="142" class="mod">inventory.js ★</text><text x="868" y="161" class="small">find · check · reserve</text><text x="868" y="178" class="small">release · sellable stock</text>
+<rect x="1011" y="120" width="147" height="66" rx="7" class="ticket"/>
+<text x="1023" y="142" class="mod">orders.js ★ cancel</text><text x="1023" y="161" class="small">cancel() → release()</text><text x="1023" y="178" class="small">Khata debit reversal</text>
+<rect x="856" y="198" width="145" height="62" rx="7" class="box"/>
+<text x="868" y="220" class="mod">pricing.js</text><text x="868" y="241" class="small">subtotal · computeTotals</text>
+<rect x="1011" y="198" width="147" height="62" rx="7" class="box"/>
+<text x="1023" y="220" class="mod">coupons.js</text><text x="1023" y="241" class="small">validate · discount</text>
+<rect x="856" y="272" width="145" height="62" rx="7" class="box"/>
+<text x="868" y="294" class="mod">tax.js</text><text x="868" y="315" class="small">HSN slab · CGST/SGST</text>
+<rect x="1011" y="272" width="147" height="62" rx="7" class="box"/>
+<text x="1023" y="294" class="mod">ledger.js</text><text x="1023" y="315" class="small">Khata · settlements</text>
+<rect x="856" y="346" width="145" height="62" rx="7" class="box"/>
+<text x="868" y="368" class="mod">orders.js</text><text x="868" y="389" class="small">add · get · list</text>
+<rect x="1011" y="346" width="147" height="62" rx="7" class="box"/>
+<text x="1023" y="368" class="mod">store.js</text><text x="1023" y="389" class="small">read · write · audit</text>
+<rect x="856" y="420" width="145" height="62" rx="7" class="box"/>
+<text x="868" y="442" class="mod">invoice.js</text><text x="868" y="463" class="small">compute · render</text>
+<rect x="1011" y="420" width="147" height="62" rx="7" class="box"/>
+<text x="1023" y="442" class="mod">reports.js</text><text x="1023" y="463" class="small">dashboard · reconcile</text>
+<rect x="856" y="494" width="302" height="30" rx="7" class="box"/>
+<text x="868" y="514" class="small"><tspan font-weight="700">dates.js</tspan> · today() · normalizeDateKey() · getFiscalYear()</text>
+
+<rect x="282" y="392" width="220" height="98" rx="12" class="panel"/>
+<text x="300" y="418" class="head">Settings · config.js</text>
+<text x="300" y="443" class="small">port · shop identity · tax/HSN slabs</text><text x="300" y="465" class="small">inventory defaults · coupon catalog</text>
+
+<rect x="530" y="392" width="278" height="98" rx="12" class="data"/>
+<text x="548" y="418" class="head">Persistent data · data/db.json</text>
+<text x="548" y="444" class="small">products · customers · orders</text><text x="548" y="466" class="small">settlements · auditLog · ID counters</text>
+
+<!-- Architectural connections -->
+<path d="M254 220 H282" class="edge"/><path d="M502 230 H530" class="edge"/><path d="M808 220 H838" class="edge"/>
+<path d="M392 361 V392" class="edge"/><path d="M808 440 H826 V465 H838" class="edge"/>
+<path d="M502 440 H530" class="edge"/>
+<path d="M484 310 H516 V370 H835 V153 H856" class="edge dash"/>
+<text x="500" y="355" class="small muted">invoice path</text>
+<path d="M1001 377 H1011" class="edge"/><path d="M1001 303 H1011" class="edge"/>
+<path d="M928 482 V494" class="edge"/><path d="M1084 482 V494" class="edge"/>
+
+<!-- Numbered order flow -->
+<rect x="24" y="552" width="1152" height="216" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="44" y="580" class="head">Order placement flow · POST /api/orders</text>
+<rect x="44" y="596" width="194" height="92" rx="9" class="flow"/>
+<circle cx="65" cy="617" r="13" fill="#2563eb"/><text x="61" y="622" fill="#fff" font-weight="700">1</text>
+<text x="85" y="621" class="mod">Browser</text><text x="58" y="646" class="small">app.js sends items</text><text x="58" y="666" class="small">and checkout choices</text>
+<rect x="258" y="596" width="194" height="92" rx="9" class="flow"/>
+<circle cx="279" cy="617" r="13" fill="#2563eb"/><text x="275" y="622" fill="#fff" font-weight="700">2</text>
+<text x="299" y="621" class="mod">routes/orders.js</text><text x="272" y="646" class="small">resolves product id</text><text x="272" y="666" class="small">builds trusted line</text>
+<rect x="472" y="596" width="194" height="92" rx="9" class="flow"/>
+<circle cx="493" cy="617" r="13" fill="#2563eb"/><text x="489" y="622" fill="#fff" font-weight="700">3</text>
+<text x="513" y="621" class="mod">inventory.check()</text><text x="486" y="646" class="small">stock − reserved</text><text x="486" y="666" class="small">validates each line</text>
+<rect x="686" y="596" width="194" height="92" rx="9" class="flow"/>
+<circle cx="707" cy="617" r="13" fill="#2563eb"/><text x="703" y="622" fill="#fff" font-weight="700">4</text>
+<text x="727" y="621" class="mod">pricing + ledger</text><text x="700" y="646" class="small">coupon, GST, total;</text><text x="700" y="666" class="small">Khata debit if selected</text>
+<rect x="900" y="596" width="244" height="92" rx="9" class="flow"/>
+<circle cx="921" cy="617" r="13" fill="#2563eb"/><text x="917" y="622" fill="#fff" font-weight="700">5</text>
+<text x="941" y="621" class="mod">save + respond</text><text x="914" y="646" class="small">inventory.reserve() deducts stock;</text><text x="914" y="666" class="small">orders.add() → store.write(db)</text>
+<path d="M238 642 H258" class="fed"/><path d="M452 642 H472" class="fed"/><path d="M666 642 H686" class="fed"/><path d="M880 642 H900" class="fed"/>
+<rect x="44" y="710" width="280" height="34" rx="7" fill="#fff1d6" stroke="#d97706" stroke-width="1.5"/>
+<text x="58" y="732" class="small"><tspan font-weight="700">★ Ticket focus:</tspan> inventory.js</text>
+<rect x="338" y="710" width="344" height="34" rx="7" fill="#fff1d6" stroke="#d97706" stroke-width="1.5"/>
+<text x="352" y="732" class="small"><tspan font-weight="700">★ Ticket focus:</tspan> orders.js cancel() only</text>
+<text x="706" y="732" class="small muted">Cancel path: orders.cancel() → inventory.release() → store.write()</text>
+</svg>
